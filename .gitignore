@@ -1,0 +1,15 @@
+node_modules
+dist
+.DS_Store
+
+# Local/AI visual production workspaces. The app uses the promoted assets only.
+assets/share-cards-ai-working/
+assets/title-hero-working/
+assets/type-portraits-ai/
+assets/type-portraits-ai-working/
+assets/type-portraits-centered/
+assets/type-portraits-original/
+assets/type-portraits-regenerated/
+assets/type-portraits-resized-backup-*/
+assets/type-portraits-safe/
+assets/type-portraits-safe2/
