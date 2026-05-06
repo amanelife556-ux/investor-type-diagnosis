@@ -1,4 +1,5 @@
 import { useMemo, useState, type CSSProperties } from "react";
+import titleHeroImage from "../assets/title-hero.webp";
 import { axes, investorTypes, questions } from "./diagnosisData";
 import {
   buildShareText,
@@ -23,14 +24,7 @@ const shareCardImages = import.meta.glob(["../assets/share-cards/R*.png", "../as
   query: "?url",
 }) as Record<string, string>;
 
-const titleHeroImages = import.meta.glob("../assets/title-hero.*", {
-  eager: true,
-  import: "default",
-  query: "?url",
-}) as Record<string, string>;
-
 const introTypeCodes = Object.keys(investorTypes);
-const titleHeroImage = titleHeroImages["../assets/title-hero.png"];
 
 async function getTypePortrait(code: string) {
   const loadPortrait = typePortraits[`../assets/type-portraits/${code}.png`];
@@ -362,7 +356,9 @@ export function App() {
               </div>
               <div className="hero-card" aria-hidden="true">
                 {titleHeroImage ? (
-                  <img className="hero-main-image" src={titleHeroImage} alt="" />
+                  <div className="hero-main-frame">
+                    <img className="hero-main-image" src={titleHeroImage} alt="" />
+                  </div>
                 ) : (
                   <div className="hero-mosaic">
                     {introTypeCodes.map((code) => {

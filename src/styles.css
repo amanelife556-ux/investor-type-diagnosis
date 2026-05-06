@@ -273,14 +273,22 @@ h1 {
   filter: saturate(0.94) sepia(0.08) contrast(1.02);
 }
 
-.hero-main-image {
-  display: block;
-  width: 100%;
+.hero-main-frame {
+  position: relative;
   aspect-ratio: 3 / 2;
-  object-fit: cover;
-  object-position: center;
   background: #ead9b8;
   border-radius: 6px;
+  overflow: hidden;
+}
+
+.hero-main-image {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
   filter: saturate(0.96) sepia(0.06) contrast(1.02);
 }
 
@@ -907,11 +915,20 @@ h1 {
 
   .hero-card {
     order: -1;
+    width: calc(100% + 32px);
+    margin: -8px -16px 0;
+    padding: 6px;
+    border-left: 0;
+    border-right: 0;
+    border-radius: 0;
   }
 
-  .hero-mosaic,
-  .hero-main-image {
-    max-height: 380px;
+  .hero-main-frame {
+    border-radius: 4px;
+  }
+
+  .hero-mosaic {
+    max-height: none;
   }
 
   .question-scroll {
@@ -1075,6 +1092,13 @@ h1 {
   border: 1px solid rgba(90, 57, 40, 0.22);
   border-radius: 6px;
   pointer-events: none;
+}
+
+@media (max-width: 760px) {
+  .hero-card::before {
+    inset: 6px;
+    border-radius: 4px;
+  }
 }
 
 .hero-caption {
