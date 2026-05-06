@@ -1,7 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="投資家タイプ診断">
-  <rect width="64" height="64" rx="12" fill="#2b261f"/>
-  <rect x="8" y="8" width="48" height="48" rx="8" fill="#f4ead4" stroke="#b98535" stroke-width="3"/>
-  <path d="M18 42h28" stroke="#5a3928" stroke-width="4" stroke-linecap="round"/>
-  <path d="M20 36l8-10 8 7 8-15" fill="none" stroke="#8f3f36" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="44" cy="18" r="4" fill="#3f766e"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="昭和社員転生診断">
+  <rect width="64" height="64" rx="12" fill="#17212b"/>
+  <rect x="8" y="8" width="48" height="48" rx="8" fill="#f7f2e9" stroke="#9eb0a7" stroke-width="3"/>
+  <path d="M18 24h28M18 34h20M18 44h28" stroke="#405f7a" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="46" cy="34" r="7" fill="#a64f43"/>
 </svg>

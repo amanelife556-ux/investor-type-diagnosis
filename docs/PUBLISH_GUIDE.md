@@ -75,6 +75,7 @@ Publish directory: dist
 
 ```text
 public/og-image.png
+public/og-image-v2.png
 public/favicon.svg
 ```
 
@@ -86,15 +87,21 @@ public/favicon.svg
 - theme color
 - favicon
 
-公開URLが確定したら、必要に応じて以下を絶対URLで追加する。
+公開URLは以下で設定済み:
+
+```text
+https://work-style-diagnosis.vercel.app/
+```
+
+本番URLを変える場合は、以下を新しい絶対URLへ変更する。
 
 ```html
 <meta property="og:url" content="https://公開URL/">
-<meta property="og:image" content="https://公開URL/og-image.png">
-<meta name="twitter:image" content="https://公開URL/og-image.png">
+<meta property="og:image" content="https://公開URL/og-image-v2.png">
+<meta name="twitter:image" content="https://公開URL/og-image-v2.png">
 ```
 
-多くのホスティングでは相対パス `/og-image.png` でも配信されるが、Xなどのプレビュー確認で画像が出ない場合は絶対URLに変更する。
+Xなどのクローラー向けに、OGP/Twitter画像は絶対URLで指定する。
 
 ## X共有
 
@@ -110,11 +117,11 @@ public/favicon.svg
 - `画像を保存` が動く。
 - `Xで共有` の投稿文とURLが入る。
 - スマホ幅でタイトル、質問、結果が読める。
-- OGPプレビューに `og-image.png` が出る。
+- OGPプレビューに `og-image-v2.png` が出る。
 
 ## 注意
 
-このプロジェクトは現時点でGit管理されていない。
+このプロジェクトはGit管理されている。
 
 継続的に公開するなら、次のどちらかに寄せる。
 

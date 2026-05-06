@@ -1,4 +1,4 @@
-export type AxisKey = "risk" | "horizon" | "involvement" | "reward";
+export type AxisKey = "stability" | "collaboration" | "planning" | "future";
 
 export type Axis = {
   label: string;
@@ -20,16 +20,23 @@ export type Question = {
   choices: Choice[];
 };
 
-export type InvestorType = {
+export type ShowaEmployeeType = {
   role: string;
   mark: string;
-  motif: string;
   line: string;
   shareLine: string;
   summary: string;
-  preferredMethods: string[];
-  strength: string;
-  watchout: string;
+  survivalStrategy: string;
+  reputation: string;
+  ngMoves: string[];
+  acquittalPoints: string[];
+  returnMemo: string;
+  subCharges: string[];
+  ngScore: number;
+  ngScoreComment: string;
+  tags: string[];
+  allyType: string;
+  enemyType: string;
   colors: [string, string];
 };
 

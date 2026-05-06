@@ -1,73 +1,49 @@
-# Execution Profile: 投資家タイプ診断
+# Execution Profile: 昭和社員転生診断
 
-最終更新日: 2026-05-05
+最終更新日: 2026-05-06
 管理者: ユーザー
 
 ## 採用プロファイル
 
 ```text
-Profile: hybrid-ready
-Execution mode: hybrid
+Profile: codex-only
+Execution mode: single-ai
 Primary coordinator: Codex / 人間
 Fallback profile: codex-only
+Upgrade target: hybrid-ready
 ```
 
-## このプロファイルを採用する理由
+## 採用理由
 
-このプロジェクトは、ビジュアル、ロジック、コンテンツ、QAを分担しながら進めています。一方で、作業場所、既存仕様、テスト、ビルド、最終統合は1つに揃える必要があります。
+現在は、新規派生アプリの初期実装と運用整理の段階です。複数AIを常時分担するほどの並行作業はまだないため、Core Lite と `codex-only` を基本にします。
 
-そのため、通常は複数担当の成果を統合する `hybrid-ready` とし、緊急の小修正や確認作業では `codex-only` に切り替えます。
+ただし、16枚の結果カード制作、文言レビュー、公開前QAが本格化した場合は `hybrid-ready` へ上げます。
 
 ## 実行主体
 
-| 実行主体ID | 種別 | 名前/環境 | 親 | 用途 | 使用条件 |
-|---|---|---|---|---|---|
-| H1 | human | ユーザー | なし | 最終判断、仕様判断、担当指示 | 仕様変更、禁止事項解除、採用判断が必要なとき |
-| A1 | external-ai / local-ai | Codex | H1 | 全体構成、統合、レビュー、実装、テスト | 通常の統合作業、fallback作業 |
-| A2 | external-ai / human | ビジュアル担当 | H1 | UI、CSS、画像、レスポンシブ | 見た目、画像切り出し、ポートレート中央寄せ |
-| A3 | external-ai / human | ロジック担当 | H1 | 診断ロジック、テスト | スコア計算、診断コード、共有文面の検証 |
-| A4 | external-ai / human | Fermat | H1 | コンテンツ | 設問、タイプ文言、助言表現の調整 |
-| A5 | external-ai / human | Raman | H1 | QA | テスト、ビルド、PC/スマホ確認、導線確認 |
-| A1-1 | internal-agent | Codex worker / explorer | A1 | 調査、分離可能な実装、補助レビュー | Codexが必要と判断し、作業範囲を分けられるとき |
+| 実行主体ID | 種別 | 名前/環境 | 用途 |
+|---|---|---|---|
+| H1 | human | ユーザー | 最終判断、仕様判断、公開判断 |
+| A1 | local-ai | Codex | 実装、統合、テスト、文書整理 |
+| A1-1 | internal-agent | Codex worker/explorer | 必要時のみ、分離可能な調査や実装 |
 
 ## 役割割り当て
 
-| 役割 | 担当 | 使用条件 | 成果物 | 統合先 |
-|---|---|---|---|---|
-| 統合担当 | Codex / 人間 | 常時 | 変更の取り込み、レビュー、最終確認 | プロジェクト本体 |
-| ビジュアル担当 | ビジュアル担当 | 見た目、画像、CSS、レスポンシブ | CSS/画像修正、スクショ確認結果 | Codex |
-| ロジック担当 | ロジック担当 | 診断計算、テスト、共有文面 | ロジック修正、テスト結果 | Codex |
-| コンテンツ担当 | Fermat | 設問、タイプ文言、注意表現 | 文言修正案、採用判断メモ | Codex / 人間 |
-| QA担当 | Raman | リリース前確認、導線確認 | テスト/ビルド/手動確認結果 | Codex / 人間 |
-| 整理担当 | Codex | handoff、キット再適用、運用レビュー | 運用文書、引き継ぎ | プロジェクトdocs |
+| 役割 | 担当 | 主な範囲 |
+|---|---|---|
+| 統合担当 | Codex / 人間 | 全体方針、最終反映、テスト結果整理 |
+| コンテンツ担当 | Codex / 人間 | `src/diagnosisData.ts`、タイプ文言、設問 |
+| ロジック担当 | Codex | `src/diagnosisLogic.ts`、`src/__tests__/` |
+| ビジュアル担当 | Codex | `src/styles.css`、`assets/`、OGP/共有カード |
+| QA担当 | Codex | `npm test`、`npm run test:logic`、`npm run build`、手動確認 |
 
 ## 切り替えルール
 
-通常時:
-
-- `hybrid-ready` として、担当別の成果を Codex が統合する。
-
-外部AIを使わない場合:
-
-- `codex-only` に切り替え、変更範囲を小さくして進める。
-
-レビューを強化する場合:
-
-- QA担当またはレビュー担当に独立確認を依頼し、Codexは統合と判断整理に回る。
-
-緊急修正の場合:
-
-- `codex-only` で最小修正する。
-- 変更後、必要ならQA担当またはビジュアル担当へ確認を戻す。
-
-ビジュアル修正の場合:
-
-- `VISUAL_FIX_BRIEF.md` を優先し、`src/styles.css` と `assets/` を主対象にする。
-- React構造の変更が必要に見える場合は、Codexに統合判断を戻す。
+- 複数AIへ渡す作業が2件以上並行する場合、`hybrid-ready` へ上げる。
+- 画像アセットや共有カードを複数担当で制作する場合、Asset QA と Session Board を採用する。
+- 公開URL、OGP、スマホ実機確認が必要になったら Launch Readiness を採用する。
 
 ## 引き継ぎルール
 
-- 実行プロファイルを切り替えた場合、`docs/handoffs/` に理由を残す。
-- 外部担当の成果とCodex内部の作業結果は分けて書く。
-- `codex-only` で独立レビューが不足している場合、未確認事項として残す。
-- 統合前の成果がある場合、統合担当と未統合範囲を明記する。
+- 区切りごとに `docs/handoffs/` へ現在地、確認済みコマンド、未確認事項を残す。
+- 仕様変更が必要そうな案は、実装前に `docs/CHANGE_INTAKE.md` へ Park/Adopt/Reject で整理する。

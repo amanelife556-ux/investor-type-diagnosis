@@ -1,100 +1,62 @@
 # AI作業ルール
 
-このプロジェクトでは、DevAide の方針を参照して作業します。
+このプロジェクトでは DevAide を適用します。
 
-DevAide はAIに開発を丸投げするためのものではありません。
-人間がプロダクトオーナーとしてAI開発チームを率ち、AIは実装、レビュー、整理、QAを支援します。
-
-参照元:
+DevAide はAIに開発を丸投げするためのものではありません。人間がプロダクトオーナーとして最終判断を行い、AIは実装、レビュー、整理、QAを支援します。
 
 ```text
-/Volumes/My Passport for Mac/development/ai_development_session_kit
+DevAide adopted version: v0.11.0-product-facing-cleanup
+Adoption set: Core Lite / standard-lite
+Working location: /Volumes/My Passport for Mac/development/work-style-diagnosis
+Handoff location: docs/handoffs/YYYY-MM-DD_作業名.md
+DevAide state: docs/AI_KIT_VERSION.md
+DevAide source: /Volumes/My Passport for Mac/development/ai_development_session_kit/product
 ```
 
-必ず読むもの:
+## 必ず読むもの
 
-- `docs/AI_KIT_VERSION.md`
-- `docs/AI_KIT_ADOPTION_SET.md`
-- `docs/PROJECT_START_PRECHECK.md`
-- `docs/AI_START_ROUTER.md`
-- `docs/DECISION_LOG.md`
-- `docs/CHANGE_INTAKE.md`
-- `docs/EXECUTION_PROFILE.md`
-- `docs/AI_KIT_ADOPTION_CHECKLIST.md`
-- `/Volumes/My Passport for Mac/development/ai_development_session_kit/docs/AI_DEVELOPMENT_RULES.md`
-- `/Volumes/My Passport for Mac/development/ai_development_session_kit/docs/REPORTING_MODES.md`
 - `docs/PROJECT_PRINCIPLES.md`
 - `WORKING_LOCATION.md`
+- `docs/AI_KIT_VERSION.md`
+- `docs/DECISION_LOG.md`
+- `docs/CHANGE_INTAKE.md`
 - `docs/handoffs/` の最新メモ
-- 作業指示書がある場合はその指示書
+- 必要に応じて `/Volumes/My Passport for Mac/development/ai_development_session_kit/product/docs/AI_DEVELOPMENT_RULES.md`
+- 必要に応じて `/Volumes/My Passport for Mac/development/ai_development_session_kit/product/docs/REPORTING_MODES.md`
 
-## 実行プロファイル
+## 作業前に整理すること
 
-```text
-Execution profile: hybrid-ready
-Execution mode: hybrid
-Primary coordinator: Codex / 人間
-Fallback profile: codex-only
-```
-
-詳しい実行主体と切り替えルールは `docs/EXECUTION_PROFILE.md` を参照してください。
-
-## 作業開始時の確認
-
-作業前に、短く以下を整理してください。
-
-1. 今回の目的
+1. 目的
 2. 変更対象
 3. 変更しない範囲
 4. 未確認事項
-5. 実装方針
-6. 確認するテスト
-7. `docs/DECISION_LOG.md` に関係する既存判断
-8. `docs/CHANGE_INTAKE.md` に入れるべき変更案の有無
+5. 確認方法
 
-未確認事項は推測せず、`未確認` と書いてください。
+未確認事項は推測で埋めず、`未確認` と書いてください。
 
-## 役割分担
+## 役割
 
-- 全体構成/統合レビュー: Codex / 人間
-- ビジュアル担当: `src/styles.css` と `assets/`
-- 画像作成担当: 高解像度の生成元画像は `assets/type-portraits-ai-working/` に保存する。`assets/type-portraits/` は直接上書きしない。
-- ロジック担当: `src/diagnosisLogic.ts` と `src/__tests__/`
-- コンテンツ担当: Fermat。`src/diagnosisData.ts` と `src/types.ts`
-- QA担当: Raman。テスト、ビルド、PC/スマホ手動確認、コピー/X共有確認
-- 整理担当: Codex。handoff、キット再適用、運用レビュー
+- プロダクト判断役: 人間
+- 統合/実装担当: Codex
+- コンテンツ担当: 診断軸、設問、タイプ文言の調整
+- ビジュアル担当: `src/styles.css`、`assets/`、OGP/共有カード
+- QA担当: テスト、ビルド、PC/スマホ表示、結果共有導線
 
-## 統合ルール
+## 変更境界
 
-- 外部担当の成果は、Codexまたは人間が統合判断する。
-- 画像作成担当の成果は、Codexまたは人間が確認してから `assets/type-portraits/` へ反映する。
-- React構造、診断データ、診断ロジックをまたぐ変更は、単独担当だけで完了扱いにしない。
-- `hybrid-ready` で進めた成果は、外部担当の作業とCodex側の統合作業を分けて報告する。
-- `codex-only` で進めた場合、独立レビューが不足している範囲を未確認事項として残す。
-- 仕様変更案や後回しの改善案は、すぐ実装せず `docs/CHANGE_INTAKE.md` にAdopt/Park/Rejectで整理する。
-- 採用した重要判断は `docs/DECISION_LOG.md` に残す。
+- 診断の核である4軸、16タイプ、タイプコード、12問を変える場合は人間に確認する。
+- `src/main.tsx` は起動専用、画面本体は `src/App.tsx` に集約する。
+- 診断データは `src/diagnosisData.ts`、ロジックは `src/diagnosisLogic.ts` を正本にする。
+- 古い投資家タイプ診断/社会人タイプ診断由来の文書や画像指示は、`docs/LEGACY_DOCS_NOTE.md` に従い、昭和社員転生診断の正本として扱わない。
 
 ## 禁止事項
 
-- 人間の確認なしに診断軸、タイプコード、設問数、タイプ数を変更しない。
-- 見た目の調整を理由に診断ロジックや設問意図を変えない。
+- 人間確認なしに診断軸、設問数、タイプ数、タイプコードを変更しない。
+- 結果文で現代の本人の能力、人格、適職を断定しすぎない。
+- すべての結果は「昭和に転生した架空アバター」として扱う。
+- 会社員としての優劣や人格評価に見える表現を追加しない。
 - テストを通すために仕様を弱めない。
-- `src/main.tsx` に画面ロジックを戻さない。画面本体は `src/App.tsx` に集約する。
 - 失敗したテストや未実行コマンドを報告から落とさない。
-
-## 報告方針
-
-通常は `REPORTING_MODES.md` の通常開発モードで報告してください。
-
-ユーザーには主に以下だけを返します。
-
-- 結論
-- ユーザー判断が必要な点
-- 実行したテストと結果
-- 未確認事項
-- 次の自然なタスク
-
-テスト失敗、原因不明、仕様変更の可能性がある場合だけ、詳細ログや原因候補を出してください。
 
 ## セッション終了時
 

@@ -1,9 +1,9 @@
-import { adviceByAxis, axes, investorTypes, questions } from "./diagnosisData";
-import type { AxisKey, InvestorType, Question, Scores } from "./types";
+import { adviceByAxis, axes, questions, showaEmployeeTypes } from "./diagnosisData";
+import type { AxisKey, Question, Scores, ShowaEmployeeType } from "./types";
 
 export type DiagnosisResult = {
   code: string;
-  type: InvestorType;
+  type: ShowaEmployeeType;
   scores: Scores;
   advice: string[];
   relatedTypes: RelatedType[];
@@ -15,16 +15,16 @@ export type RelatedType = {
   kind: RelatedTypeKind;
   label: string;
   code: string;
-  type: InvestorType;
+  type: ShowaEmployeeType;
   description: string;
 };
 
 export function createEmptyScores(): Scores {
   return {
-    risk: 0,
-    horizon: 0,
-    involvement: 0,
-    reward: 0,
+    stability: 0,
+    collaboration: 0,
+    planning: 0,
+    future: 0,
   };
 }
 
@@ -82,14 +82,14 @@ export function buildAdvice(scores: Scores): string[] {
 
 function flipCodeAt(code: string, index: number): string {
   const pairs: Record<string, string> = {
-    S: "R",
-    R: "S",
-    L: "T",
-    T: "L",
-    P: "A",
-    A: "P",
-    I: "G",
-    G: "I",
+    A: "C",
+    C: "A",
+    S: "T",
+    T: "S",
+    E: "D",
+    D: "E",
+    N: "F",
+    F: "N",
   };
   const parts = code.split("");
   parts[index] = pairs[parts[index]];
@@ -111,29 +111,29 @@ export function buildRelatedTypes(code: string): RelatedType[] {
   const related = [
     {
       kind: "similar",
-      label: "近いタイプ",
+      label: "同期社員",
       code: similarCode,
-      description: "判断の土台は近く、収益源の見方だけが少し違うタイプです。",
+      description: "昭和の会社で同じ空気を吸っていそうな同期社員です。",
     },
     {
       kind: "complement",
-      label: "補完タイプ",
+      label: "巻き込まれ社員",
       code: complementCode,
-      description: "リスク感覚と関わり方に違いがあり、偏りを整える視点をくれるタイプです。",
+      description: "あなたの昭和ムーブに巻き込まれやすい社員です。",
     },
     {
       kind: "contrast",
-      label: "対照タイプ",
+      label: "天敵社員",
       code: contrastCode,
-      description: "ほぼ反対側から市場を見るタイプです。自分にない前提を確認したいときの参考になります。",
+      description: "同じ会議室にいると、時代の歪みが発生しそうな天敵社員です。",
     },
   ] satisfies Omit<RelatedType, "type">[];
 
   return related.map((item) => {
-    const type = investorTypes[item.code];
+    const type = showaEmployeeTypes[item.code];
 
     if (!type) {
-      throw new Error(`Unknown related investor type code: ${item.code}`);
+      throw new Error(`Unknown related Showa employee type code: ${item.code}`);
     }
 
     return {
@@ -148,10 +148,10 @@ export function getDiagnosisResult(answers: number[]): DiagnosisResult {
 
   const scores = calculateScores(answers);
   const code = buildCode(scores);
-  const type = investorTypes[code];
+  const type = showaEmployeeTypes[code];
 
   if (!type) {
-    throw new Error(`Unknown investor type code: ${code}`);
+    throw new Error(`Unknown Showa employee type code: ${code}`);
   }
 
   return {
@@ -165,11 +165,12 @@ export function getDiagnosisResult(answers: number[]): DiagnosisResult {
 
 export function buildShareText(result: DiagnosisResult): string {
   return [
-    "投資家タイプ診断をやってみたよ",
-    `私のタイプは「${result.type.role}」`,
-    "あなたはどのタイプ？",
+    "昭和社員転生診断の結果、",
+    `私は「${result.type.role}」でした。`,
+    result.type.shareLine,
+    `令和NG濃度：${result.type.ngScore}%`,
     "",
-    "#投資家タイプ診断",
+    "#昭和社員転生診断",
   ].join("\n");
 }
 

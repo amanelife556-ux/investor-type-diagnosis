@@ -1,6 +1,6 @@
 import { useMemo, useState, type CSSProperties } from "react";
-import titleHeroImage from "../assets/title-hero.webp";
-import { axes, investorTypes, questions } from "./diagnosisData";
+import titleHeroImage from "../assets/work-style-hero.png";
+import { axes, questions } from "./diagnosisData";
 import {
   buildShareText,
   buildXShareUrl,
@@ -12,56 +12,6 @@ import {
 import type { AxisKey, Scores } from "./types";
 
 type View = "intro" | "question" | "result";
-
-const typePortraits = import.meta.glob(["../assets/type-portraits/R*.png", "../assets/type-portraits/S*.png"], {
-  import: "default",
-  query: "?url",
-}) as Record<string, () => Promise<string>>;
-
-const shareCardImages = import.meta.glob(["../assets/share-cards/R*.png", "../assets/share-cards/S*.png"], {
-  eager: true,
-  import: "default",
-  query: "?url",
-}) as Record<string, string>;
-
-const introTypeCodes = Object.keys(investorTypes);
-
-async function getTypePortrait(code: string) {
-  const loadPortrait = typePortraits[`../assets/type-portraits/${code}.png`];
-
-  return loadPortrait?.();
-}
-
-function getShareCardImage(code: string) {
-  return shareCardImages[`../assets/share-cards/${code}.png`];
-}
-
-function loadCanvasImage(src: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error(`Failed to load image: ${src}`));
-    image.src = src;
-  });
-}
-
-function drawContainedImage(
-  context: CanvasRenderingContext2D,
-  image: HTMLImageElement,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-) {
-  const imageRatio = image.width / image.height;
-  const targetRatio = width / height;
-  const drawWidth = imageRatio > targetRatio ? width : height * imageRatio;
-  const drawHeight = imageRatio > targetRatio ? width / imageRatio : height;
-  const drawX = x + (width - drawWidth) / 2;
-  const drawY = y + (height - drawHeight) / 2;
-
-  context.drawImage(image, drawX, drawY, drawWidth, drawHeight);
-}
 
 function drawRoundedRectangle(
   context: CanvasRenderingContext2D,
@@ -117,7 +67,48 @@ function drawWrappedText(
   }
 }
 
-async function downloadResultCardImage(result: ReturnType<typeof getDiagnosisResult>, portraitUrl: string) {
+function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) {
+        resolve(blob);
+        return;
+      }
+
+      reject(new Error("Failed to create image blob"));
+    }, "image/png");
+  });
+}
+
+function drawWorkMark(context: CanvasRenderingContext2D, result: ReturnType<typeof getDiagnosisResult>) {
+  const [primaryColor, secondaryColor] = result.type.colors;
+
+  context.fillStyle = "#fffaf0";
+  drawRoundedRectangle(context, 710, 96, 360, 360, 28);
+  context.fill();
+
+  const gradient = context.createLinearGradient(710, 96, 1070, 456);
+  gradient.addColorStop(0, `${primaryColor}e8`);
+  gradient.addColorStop(1, `${secondaryColor}d8`);
+  context.fillStyle = gradient;
+  drawRoundedRectangle(context, 748, 134, 284, 284, 142);
+  context.fill();
+
+  context.fillStyle = "rgba(255, 250, 240, 0.2)";
+  context.fillRect(786, 180, 206, 22);
+  context.fillRect(786, 242, 206, 22);
+  context.fillRect(786, 304, 206, 22);
+
+  context.fillStyle = "#fffaf0";
+  context.font = "900 144px Hiragino Sans, Yu Gothic, sans-serif";
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillText(result.type.mark, 890, 278);
+  context.textBaseline = "alphabetic";
+  context.textAlign = "left";
+}
+
+async function saveResultCardImage(result: ReturnType<typeof getDiagnosisResult>) {
   const canvas = document.createElement("canvas");
   canvas.width = 1200;
   canvas.height = 675;
@@ -127,15 +118,14 @@ async function downloadResultCardImage(result: ReturnType<typeof getDiagnosisRes
     throw new Error("Canvas is not supported");
   }
 
-  const portrait = await loadCanvasImage(portraitUrl);
   const [primaryColor, secondaryColor] = result.type.colors;
 
-  context.fillStyle = "#f8f0dc";
+  context.fillStyle = "#f7f0e4";
   context.fillRect(0, 0, canvas.width, canvas.height);
 
   const gradient = context.createLinearGradient(0, 0, canvas.width, canvas.height);
   gradient.addColorStop(0, `${primaryColor}3f`);
-  gradient.addColorStop(0.48, "#f8f0dc");
+  gradient.addColorStop(0.48, "#f7f0e4");
   gradient.addColorStop(1, `${secondaryColor}45`);
   context.fillStyle = gradient;
   context.fillRect(0, 0, canvas.width, canvas.height);
@@ -149,14 +139,7 @@ async function downloadResultCardImage(result: ReturnType<typeof getDiagnosisRes
   drawRoundedRectangle(context, 34, 34, canvas.width - 68, canvas.height - 68, 28);
   context.stroke();
 
-  context.fillStyle = "#fffaf0";
-  drawRoundedRectangle(context, 690, 78, 412, 456, 24);
-  context.fill();
-  context.strokeStyle = "rgba(90, 57, 40, 0.28)";
-  context.lineWidth = 3;
-  drawRoundedRectangle(context, 690, 78, 412, 456, 24);
-  context.stroke();
-  drawContainedImage(context, portrait, 706, 94, 380, 424);
+  drawWorkMark(context, result);
 
   context.fillStyle = "rgba(255, 250, 240, 0.86)";
   drawRoundedRectangle(context, 714, 546, 364, 60, 18);
@@ -169,7 +152,7 @@ async function downloadResultCardImage(result: ReturnType<typeof getDiagnosisRes
 
   context.fillStyle = "#5a3928";
   context.font = "800 27px Hiragino Sans, Yu Gothic, sans-serif";
-  context.fillText("投資家タイプ診断", 76, 92);
+  context.fillText("昭和社員転生診断", 76, 92);
 
   context.fillStyle = primaryColor;
   drawRoundedRectangle(context, 76, 122, 154, 48, 24);
@@ -184,41 +167,28 @@ async function downloadResultCardImage(result: ReturnType<typeof getDiagnosisRes
 
   context.fillStyle = "#3a2a1e";
   context.font = "800 31px Hiragino Sans, Yu Gothic, sans-serif";
-  drawWrappedText(context, `「${result.type.shareLine}」`, 76, 410, 550, 42, 2);
+  drawWrappedText(context, `「${result.type.line}」`, 76, 410, 550, 42, 2);
 
   context.fillStyle = "rgba(255, 250, 240, 0.78)";
   drawRoundedRectangle(context, 76, 474, 554, 86, 18);
   context.fill();
   context.fillStyle = "#5a3928";
   context.font = "800 21px Hiragino Sans, Yu Gothic, sans-serif";
-  context.fillText("好みやすい投資法", 102, 509);
+  context.fillText("令和NG濃度", 102, 509);
   context.font = "900 25px Hiragino Sans, Yu Gothic, sans-serif";
-  drawWrappedText(context, result.type.preferredMethods.slice(0, 3).join(" / "), 102, 544, 500, 32, 1);
+  drawWrappedText(context, `${result.type.ngScore}% / ${result.type.tags.slice(0, 2).join(" ")}`, 102, 544, 500, 32, 1);
 
   context.fillStyle = "#8f3f36";
   context.font = "900 25px Hiragino Sans, Yu Gothic, sans-serif";
-  context.fillText("#投資家タイプ診断 #投資スタイル", 76, 612);
+  context.fillText("#昭和社員転生診断 #令和では封印", 76, 612);
 
-  const link = document.createElement("a");
-  link.download = `investor-type-${result.code}.png`;
-  link.href = canvas.toDataURL("image/png");
-  link.click();
-}
-
-function downloadImageUrl(url: string, filename: string) {
-  const link = document.createElement("a");
-  link.download = filename;
-  link.href = url;
-  link.click();
-}
-
-async function saveImageUrl(url: string, filename: string) {
-  const response = await fetch(url);
-  const blob = await response.blob();
-  const file = new File([blob], filename, { type: blob.type || "image/png" });
+  const filename = `showa-employee-${result.code}.png`;
+  const blob = await canvasToBlob(canvas);
+  const file = new File([blob], filename, { type: "image/png" });
   const shareData = {
     files: [file],
-    title: "投資家タイプ診断",
+    title: "昭和社員転生診断",
+    text: result.type.shareLine,
   };
 
   if (navigator.canShare?.(shareData)) {
@@ -226,7 +196,12 @@ async function saveImageUrl(url: string, filename: string) {
     return "共有を開きました";
   }
 
-  downloadImageUrl(url, filename);
+  const link = document.createElement("a");
+  const objectUrl = URL.createObjectURL(blob);
+  link.download = filename;
+  link.href = objectUrl;
+  link.click();
+  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
   return "保存しました";
 }
 
@@ -283,21 +258,8 @@ export function App() {
 
     try {
       setImageStatus("作成中...");
-      const shareCardImage = getShareCardImage(result.code);
-
-      if (shareCardImage) {
-        const status = await saveImageUrl(shareCardImage, `investor-type-${result.code}.png`);
-        setImageStatus(status);
-      } else {
-        const portraitUrl = await getTypePortrait(result.code);
-
-        if (!portraitUrl) {
-          throw new Error(`Missing portrait image: ${result.code}`);
-        }
-
-        await downloadResultCardImage(result, portraitUrl);
-        setImageStatus("保存しました");
-      }
+      const status = await saveResultCardImage(result);
+      setImageStatus(status);
 
       window.setTimeout(() => setImageStatus("画像を保存"), 1400);
     } catch (error) {
@@ -316,8 +278,8 @@ export function App() {
       <section className="diagnosis-panel" aria-labelledby="app-title">
         <header className="topbar">
           <div>
-            <p className="kicker">16タイプ診断</p>
-            <h1 id="app-title">投資家タイプ診断</h1>
+            <p className="kicker">昭和社員転生診断</p>
+            <h1 id="app-title">転生したら昭和の社員だった件</h1>
           </div>
           <div className="progress-card" aria-live="polite">
             <span>{answered} / {total}</span>
@@ -331,46 +293,32 @@ export function App() {
           <section className="view active">
             <div className="intro-layout">
               <div className="intro-copy">
-                <div className="chapter-badge">16 Investor Types</div>
+                <div className="chapter-badge">昭和社員 16タイプ</div>
                 <h2>
-                  <span>投資のクセから、</span>
-                  <span>あなたのタイプが見えてくる。</span>
+                  <span>令和のあなたが</span>
+                  <span>昭和の会社で働いたら？</span>
                 </h2>
                 <p>
-                  値動きへの向き合い方、時間軸、投資への関わり方、求めるリターンから、
-                  あなたが心地よく続けやすい投資タイプを整理します。
+                  根性論で出世するのか、飲み会で評価を稼ぐのか、窓際で悟りを開くのか。
+                  仕事のクセや職場での立ち回りから、あなたの“昭和社員アバター”を判定します。
                 </p>
                 <div className="intro-axis-grid" aria-label="診断で見る4つの軸">
-                  <span>安定重視 ↔ 成長重視</span>
-                  <span>短期重視 ↔ 長期重視</span>
-                  <span>おまかせ運用 ↔ 自分で選ぶ</span>
-                  <span>インカム重視 ↔ 値上がり重視</span>
+                  <span>堅実昭和 ↔ 突破昭和</span>
+                  <span>単独行動 ↔ 社内政治</span>
+                  <span>現場押し ↔ 段取り派</span>
+                  <span>現場密着 ↔ 未来妄想</span>
                 </div>
                 <div className="intro-footer">
-                  <p>20問・約3分。投資助言ではなく、自己理解のための診断です。</p>
+                  <p>これは現代の能力や人格を決める診断ではありません。ありえない昭和職場を舞台にした、バラエティ系ネタ診断です。</p>
                   <button className="primary-button" type="button" onClick={startDiagnosis}>
                     <span aria-hidden="true">✦</span>
-                    診断を始める
+                    昭和に転生する
                   </button>
                 </div>
               </div>
               <div className="hero-card" aria-hidden="true">
-                {titleHeroImage ? (
-                  <div className="hero-main-frame">
-                    <img className="hero-main-image" src={titleHeroImage} alt="" />
-                  </div>
-                ) : (
-                  <div className="hero-mosaic">
-                    {introTypeCodes.map((code) => {
-                      const cardImage = getShareCardImage(code);
-
-                      return cardImage ? <img key={code} src={cardImage} alt="" /> : null;
-                    })}
-                  </div>
-                )}
-                <div className="hero-caption">
-                  <span>4 Axes / 16 Types</span>
-                  <strong>Investor Archive</strong>
+                <div className="hero-main-frame">
+                  <img className="hero-main-image" src={titleHeroImage} alt="" />
                 </div>
               </div>
             </div>
@@ -470,29 +418,21 @@ function ResultView({
     "--avatar-a": result.type.colors[0],
     "--avatar-b": result.type.colors[1],
   } as CSSProperties;
-  const shareCardImage = getShareCardImage(result.code);
 
   return (
     <section className="view active result-view" style={resultStyle}>
       <article className="result-main">
-        {shareCardImage && (
-          <div className="result-hero-card">
-            <img src={shareCardImage} alt={`${result.type.role}の診断結果カード`} />
-          </div>
-        )}
-
-        {!shareCardImage && (
-          <div className="result-hero">
+        <div className="result-hero">
           <div className="result-copy">
-            <p className="kicker">診断結果</p>
-            <p className="result-code">{result.code}</p>
+            <p className="kicker">転生結果</p>
+            <p className="result-code">令和NG濃度 {result.type.ngScore}%</p>
             <h2>{result.type.role}</h2>
-            <p className="character-line">「{result.type.shareLine}」</p>
-            <div className="preferred-methods" aria-label="好みやすい投資法">
-              <span>好みやすい投資法</span>
+            <p className="character-line">「{result.type.line}」</p>
+            <div className="preferred-methods" aria-label="令和NGタグ">
+              <span>令和NGタグ</span>
               <div>
-                {result.type.preferredMethods.map((method) => (
-                  <strong key={method}>{method}</strong>
+                {result.type.tags.map((tag) => (
+                  <strong key={tag}>{tag}</strong>
                 ))}
               </div>
             </div>
@@ -506,7 +446,7 @@ function ResultView({
             </div>
           </div>
           <div className="result-portrait-panel">
-            <div className={`type-character portrait-character motif-${result.type.motif}`} aria-hidden="true">
+            <div className="type-character portrait-character" aria-hidden="true">
               <div className="character-badge">{result.type.mark}</div>
               <div className="character-halo" />
               <div className="character-hat" />
@@ -523,22 +463,21 @@ function ResultView({
               <div className="character-leg leg-right" />
             </div>
           </div>
-          </div>
-        )}
+        </div>
 
         <div className="result-content-grid">
           <section className="result-section result-section-primary">
-            <p className="section-kicker">Profile</p>
-            <h3>このタイプの輪郭</h3>
+            <p className="section-kicker">Showa Survival</p>
+            <h3>昭和での生存戦略</h3>
             <p className="profile-summary">{result.type.summary}</p>
             <div className="traits-block">
               <article>
-                <h4>強み</h4>
-                <p>{result.type.strength}</p>
+                <h4>生存戦略</h4>
+                <p>{result.type.survivalStrategy}</p>
               </article>
               <article>
-                <h4>気をつけたいクセ</h4>
-                <p>{result.type.watchout}</p>
+                <h4>社内の評判</h4>
+                <p>「{result.type.reputation}」</p>
               </article>
             </div>
           </section>
@@ -549,8 +488,9 @@ function ResultView({
           </aside>
 
           <section className="result-section advice-block">
-            <p className="section-kicker">Next Action</p>
-            <h3>振り返りポイント</h3>
+            <p className="section-kicker">Return to Reiwa</p>
+            <h3>令和への帰還メモ</h3>
+            <p className="profile-summary">{result.type.returnMemo}</p>
             <ul>
               {result.advice.map((item) => (
                 <li key={item}>{item}</li>
@@ -558,32 +498,72 @@ function ResultView({
             </ul>
           </section>
 
+          <section className="result-section scenes-section">
+            <p className="section-kicker">Seal These Moves</p>
+            <h3>令和では封印したいムーブ</h3>
+            <div className="scene-list">
+              {result.type.ngMoves.map((move) => (
+                <span key={move}>{move}</span>
+              ))}
+            </div>
+          </section>
+
+          <section className="result-section scenes-section">
+            <p className="section-kicker">Acquittal</p>
+            <h3>でも昭和では評価されたポイント</h3>
+            <div className="scene-list">
+              {result.type.acquittalPoints.map((point) => (
+                <span key={point}>{point}</span>
+              ))}
+            </div>
+          </section>
+
+          <section className="result-section scenes-section">
+            <p className="section-kicker">Charges</p>
+            <h3>サブ罪状</h3>
+            <div className="scene-list">
+              {result.type.subCharges.map((charge) => (
+                <span key={charge}>{charge}</span>
+              ))}
+            </div>
+          </section>
+
+          <section className="result-section scenes-section">
+            <p className="section-kicker">Compliance Meter</p>
+            <h3>令和NG濃度: {result.type.ngScore}%</h3>
+            <p className="profile-summary">{result.type.ngScoreComment}</p>
+          </section>
+
           <section className="result-section related-section">
             <p className="section-kicker">Perspective</p>
-            <h3>一緒に見るとバランスが取れるタイプ</h3>
+            <h3>同期社員 / 天敵社員</h3>
             <div className="related-grid">
-              {result.relatedTypes.map((related) => (
-                <article className={`related-card related-${related.kind}`} key={related.kind}>
-                  <span>{related.label}</span>
-                  <strong>{related.type.role}</strong>
-                  <em>{related.code}</em>
-                  <p>{related.description}</p>
-                </article>
-              ))}
+              <article className="related-card related-similar">
+                <span>同期社員</span>
+                <strong>{result.type.allyType}</strong>
+                <em>同期</em>
+                <p>同じ時代の空気を吸っていそうな昭和社員です。</p>
+              </article>
+              <article className="related-card related-contrast">
+                <span>天敵社員</span>
+                <strong>{result.type.enemyType}</strong>
+                <em>天敵</em>
+                <p>同じ部署にいると、令和と昭和の境界線が揺れます。</p>
+              </article>
             </div>
           </section>
 
           <section className="result-section share-section">
             <p className="section-kicker">Share</p>
-            <h3>結果を投稿する</h3>
+            <h3>転生結果を投稿する</h3>
             <p>
-              結果カード画像を保存して、Xで共有してください！
+              結果カード画像を保存して、Xで共有できます。
               iPhoneでは共有シートから「画像を保存」を選べます。
             </p>
             <div className="button-row">
               <button className="primary-button" type="button" onClick={onRestart}>
                 <span aria-hidden="true">↺</span>
-                もう一度診断する
+                もう一度転生する
               </button>
               <button className="ghost-button" type="button" onClick={onDownloadImage}>
                 {imageStatus}
@@ -592,7 +572,7 @@ function ResultView({
                 Xで共有
               </a>
             </div>
-            <ShareCardPreview result={result} shareCardImage={shareCardImage} />
+            <ShareCardPreview result={result} />
           </section>
         </div>
       </article>
@@ -602,34 +582,24 @@ function ResultView({
 
 function ShareCardPreview({
   result,
-  shareCardImage,
 }: {
   result: ReturnType<typeof getDiagnosisResult>;
-  shareCardImage?: string;
 }) {
-  if (shareCardImage) {
-    return (
-      <div className="share-card-preview share-card-preview-image" aria-label="保存される画像カードのプレビュー">
-        <img src={shareCardImage} alt={`${result.type.role}の投稿用結果カード`} />
-      </div>
-    );
-  }
-
   return (
     <div className="share-card-preview" aria-label="保存される画像カードのプレビュー">
       <div className="share-card-copy">
-        <span className="share-card-kicker">投資家タイプ診断</span>
-        <strong className="share-card-code">{result.code}</strong>
+        <span className="share-card-kicker">昭和社員転生診断</span>
+        <strong className="share-card-code">令和NG {result.type.ngScore}%</strong>
         <h4>{result.type.role}</h4>
-        <p>「{result.type.shareLine}」</p>
+        <p>「{result.type.line}」</p>
         <div className="share-card-methods">
-          <span>好みやすい投資法</span>
-          <strong>{result.type.preferredMethods.slice(0, 3).join(" / ")}</strong>
+          <span>主要タグ</span>
+          <strong>{result.type.tags.slice(0, 3).join(" ")}</strong>
         </div>
-        <em>#投資家タイプ診断 #投資スタイル</em>
+        <em>#昭和社員転生診断 #令和では封印</em>
       </div>
       <div className="share-card-image">
-        <span>{result.code}</span>
+        <span>{result.type.mark}</span>
       </div>
     </div>
   );

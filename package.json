@@ -1,4 +1,6 @@
 {
+  "name": "work-style-diagnosis",
+  "private": true,
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc && vite build",
