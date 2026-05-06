@@ -581,7 +581,7 @@ function ResultView({
             <p className="section-kicker">Share</p>
             <h3>結果を投稿する</h3>
             <p>
-              結果カード画像を保存して、X投稿に添付できます。
+              結果カード画像を保存して、Xで共有してください！
               iPhoneでは共有シートから「画像を保存」を選べます。
             </p>
             <div className="button-row">
