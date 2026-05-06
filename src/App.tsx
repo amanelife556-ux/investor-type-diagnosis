@@ -218,6 +218,24 @@ function downloadImageUrl(url: string, filename: string) {
   link.click();
 }
 
+async function saveImageUrl(url: string, filename: string) {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  const file = new File([blob], filename, { type: blob.type || "image/png" });
+  const shareData = {
+    files: [file],
+    title: "投資家タイプ診断",
+  };
+
+  if (navigator.canShare?.(shareData)) {
+    await navigator.share(shareData);
+    return "共有を開きました";
+  }
+
+  downloadImageUrl(url, filename);
+  return "保存しました";
+}
+
 export function App() {
   const [view, setView] = useState<View>("intro");
   const [current, setCurrent] = useState(0);
@@ -274,7 +292,8 @@ export function App() {
       const shareCardImage = getShareCardImage(result.code);
 
       if (shareCardImage) {
-        downloadImageUrl(shareCardImage, `investor-type-${result.code}.png`);
+        const status = await saveImageUrl(shareCardImage, `investor-type-${result.code}.png`);
+        setImageStatus(status);
       } else {
         const portraitUrl = await getTypePortrait(result.code);
 
@@ -283,11 +302,17 @@ export function App() {
         }
 
         await downloadResultCardImage(result, portraitUrl);
+        setImageStatus("保存しました");
       }
 
-      setImageStatus("保存しました");
       window.setTimeout(() => setImageStatus("画像を保存"), 1400);
-    } catch {
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        setImageStatus("キャンセル");
+        window.setTimeout(() => setImageStatus("画像を保存"), 1400);
+        return;
+      }
+
       setImageStatus("保存不可");
     }
   }
@@ -555,7 +580,10 @@ function ResultView({
           <section className="result-section share-section">
             <p className="section-kicker">Share</p>
             <h3>結果を投稿する</h3>
-            <p>結果カード画像を保存して、X投稿に添付できます。Xで共有を開くと、投稿文は自動で入ります。</p>
+            <p>
+              結果カード画像を保存して、X投稿に添付できます。
+              iPhoneでは共有シートから「画像を保存」を選べます。
+            </p>
             <div className="button-row">
               <button className="primary-button" type="button" onClick={onRestart}>
                 <span aria-hidden="true">↺</span>
